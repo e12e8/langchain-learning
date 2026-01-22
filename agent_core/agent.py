@@ -1,68 +1,60 @@
 # agent.py
-"""
-Agent 主执行循环（Day 6 修正版）
-"""
-
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
-
-from planner import Step, plan
-from decision import decide, DecisionResult
-from tool_registry import get_tool
+from planner import plan
+from decision import decide
+from execution import get_tool
 from reflection import reflect
+from termination import should_terminate
 from state import State
 
 
 @dataclass
 class AgentResult:
-    status: str                 # finished | incomplete | aborted
-    result: Optional[Dict[str, Any]] = None
-    reason: Optional[str] = None
-    state: Dict[str, Any] = None
+    status: str
+    result: dict | None
+    reason: str | None
+    state: dict
 
 
 async def run_agent(task: str) -> AgentResult:
     state = State()
-    steps = plan(task)  # 假设你有 plan 函数返回 List[Step]
+    steps = plan(task)
 
-    # Agent 主循环
     for step in steps:
-        decision: DecisionResult = decide(step, state)
+        # ───────────── 决策阶段 ─────────────
+        decision = decide(step, state)
 
-        # 1️⃣ 如果没有选中工具，认为任务结束
-        if decision.tool_name is None:
-            return AgentResult(
-                status="finished",
-                result=state.last_success_result(),
-                state=state.to_dict()
-            )
+        # ⭐ 记录决策轨迹（Day 8 核心）
+        state.record_decision(step.id, decision)
 
-        # 2️⃣ 执行工具
-        tool = get_tool(decision.tool_name)
-        if tool is None:
-            return AgentResult(
-                status="failed",
-                reason=f"工具不存在: {decision.tool_name}",
-                state=state.to_dict()
-            )
+        tool = get_tool(decision.selected_tool)
 
+        # ───────────── 执行阶段 ─────────────
         result = tool.run(state.build_context(step))
 
-        # 3️⃣ 反思
+        # ───────────── 反思阶段 ─────────────
         reflection = reflect(step, decision, result)
 
+        # ───────────── 记录执行 ─────────────
         state.record_step(
             step_id=step.id,
-            tool=decision.tool_name,
+            tool=decision.selected_tool,
             result=result,
-            reflection=reflection
+            reflection=reflection,
         )
 
-        # 4️⃣ 是否重试
-        if reflection["should_retry"]:
-            continue
+        # ───────────── 终止判断 ─────────────
+        if should_terminate(reflection):
+            return AgentResult(
+                status="finished",
+                result=result,
+                reason=None,
+                state=state.to_dict(),
+            )
 
     return AgentResult(
         status="incomplete",
-        state=state.snapshot()
+        result=None,
+        reason="steps finished but not terminated",
+        state=state.to_dict(),
     )
