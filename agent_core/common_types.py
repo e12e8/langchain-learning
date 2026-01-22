@@ -10,11 +10,11 @@ from typing import Dict, Any, List
 # ────────────────────────────────────────────────
 @dataclass
 class ToolDecisionScore:
-    tool_name: str
-    rule_score: float
-    history_score: float
-    llm_score: float
-    final_score: float
+    tool_name: str                   # 工具名称
+    rule_score: float                # 规则评分
+    history_score: float             # 历史评分
+    llm_score: float                 # LLM评分
+    final_score: float               # 最终评分
 
 
 # ────────────────────────────────────────────────
@@ -22,6 +22,6 @@ class ToolDecisionScore:
 # ────────────────────────────────────────────────
 @dataclass
 class DecisionResult:
-    selected_tool: str
-    final_score: float
-    candidates: List[ToolDecisionScore]
+    selected_tool: str               # 选中的工具
+    final_score: float               # 最终得分
+    candidates: List[ToolDecisionScore]  # 候选工具列表

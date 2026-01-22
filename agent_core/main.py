@@ -1,9 +1,9 @@
-# main.py
-import asyncio                    # 异步执行库
-from agent import run_agent       # 导入智能体运行函数
+# main.py - 智能体系统主入口
+import asyncio                   # 异步执行库
+from agent import run_agent      # 导入智能体运行函数
+
 
 if __name__ == "__main__":
-    result = asyncio.run(         # 异步运行智能体
-        run_agent("测试一下最小 Agent")  # 执行测试任务
-    )
-    print(result)                 # 输出结果
+    # 运行智能体执行指定任务
+    result = asyncio.run(run_agent("计算 17 * 23，然后把结果乘以 5"))
+    print(result)                  # 输出执行结果
