@@ -1,36 +1,33 @@
-# finalizer.py - 最终结果生成模块
-from typing import Dict, Any
-from state import State
+# finalizer.py
+from llm_adapter import LLMAdapter
+from explain import build_explanation
 
 
-def finalize(state: State) -> Dict[str, Any]:
-    """
-    将 Agent 的多步执行结果，整理为一个对用户 / 业务友好的最终答案
-    """
+async def finalize(state, explain: bool = False) -> dict:
+    facts = state.step_results
 
-    step_results = state.step_results
+    prompt = f"""
+你是一个严谨的助手，请根据以下【执行结果】回答用户问题。
 
-    # 1️⃣ 找到“核心数值结果”（通常来自 calculator）
-    numeric_result = None
-    for step_id, result in step_results.items():
-        if "result" in result and isinstance(result["result"], (int, float)):
-            numeric_result = result["result"]
+【执行结果】：
+{facts}
 
-    # 2️⃣ 找到“最终表达结果”（通常来自 echo / summary）
-    final_text = None
-    for step_id, result in reversed(list(step_results.items())):
-        if "content" in result:
-            final_text = result["content"]
+要求：
+1. 只基于事实回答
+2. 不得引入新的推理
+3. 语言简洁自然
+"""
 
-    # 3️⃣ 计算整体置信度（简化版：基于成功率）
-    tool_stats = state.tool_stats
-    total = sum(v["success"] + v["failure"] for v in tool_stats.values())
-    success = sum(v["success"] for v in tool_stats.values())
-    confidence = round(success / total, 2) if total > 0 else 0.5
+    adapter = LLMAdapter()
+    answer = await adapter.ainvoke(prompt)
 
-    # 4️⃣ 构造企业级返回结构
-    return {
-        "answer": final_text or numeric_result,
-        "evidence": step_results,
-        "confidence": confidence,
+    result = {
+        "answer": answer,
+        "evidence": facts,
+        "confidence": 1.0
     }
+
+    if explain:
+        result["explanation"] = build_explanation(state.to_dict())
+
+    return result
