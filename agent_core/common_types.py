@@ -1,27 +1,35 @@
-"""
-共享的数据类型定义，避免循环导入
-"""
 from dataclasses import dataclass
-from typing import Dict, Any, List
+from typing import List, Any
 
 
-# ────────────────────────────────────────────────
-# 单个工具的评分明细（Decision Trace 原子）
-# ────────────────────────────────────────────────
 @dataclass
-class ToolDecisionScore:
-    tool_name: str                   # 工具名称
-    rule_score: float                # 规则评分
-    history_score: float             # 历史评分
-    llm_score: float                 # LLM评分
-    final_score: float               # 最终评分
+class ToolCandidate:
+    """
+    单个工具的决策评分明细（可解释性核心）
+    """
+    tool_name: str
+    rule_score: float
+    history_score: float
+    llm_score: float
+    final_score: float
 
 
-# ────────────────────────────────────────────────
-# 决策最终结果（包含所有候选工具）
-# ────────────────────────────────────────────────
 @dataclass
 class DecisionResult:
-    selected_tool: str               # 选中的工具
-    final_score: float               # 最终得分
-    candidates: List[ToolDecisionScore]  # 候选工具列表
+    """
+    Decision 模块的最终输出
+    """
+    selected_tool: str
+    final_score: float
+    candidates: List[ToolCandidate]
+
+
+@dataclass
+class AgentResult:
+    """
+    Agent 总体运行结果
+    """
+    status: str
+    result: Any
+    reason: str | None
+    state: dict

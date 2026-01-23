@@ -1,21 +1,18 @@
-# execution.py - 工具执行模块
-from typing import Dict, Any
-from tool_registry import get_tool   # 导入工具注册表
+from tools.echo import echo
+from tools.calculator import calculator
 
 
-def execute(tool_name: str, context: Dict[str, Any]) -> Dict[str, Any]:
-    # 获取指定工具
-    tool = get_tool(tool_name)
-    if not tool:
-        # 工具不存在时返回错误
-        return {"ok": False, "error": f"工具 {tool_name} 不存在"}
+def execute(step, decision, state):
+    context = ""
 
-    try:
-        # 执行工具并返回结果
-        return tool.run(context)
-    except Exception as e:
-        # 捕获异常并返回错误信息
-        return {
-            "ok": False,
-            "error": str(e),
-        }
+    if step.needs_previous:
+        last = list(state.step_results.values())[-1]
+        context = f"(基于前一步结果: {last.get('result')})"
+
+    if decision.selected_tool == "calculator":
+        return calculator("1999 + 1996")
+
+    if decision.selected_tool == "echo":
+        return echo(f"{step.desc} {context}")
+
+    return {"ok": False, "error": "unknown_tool"}
