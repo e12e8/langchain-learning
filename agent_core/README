@@ -1,0 +1,173 @@
+# agent_core
+
+**A production-oriented, explainable Agent runtime with explicit decision, replay, and execution control.**
+
+agent_core is a lightweight Agent runtime framework focused on *engineering reliability* rather than prompt tricks. It is designed to demonstrate how an Agent can make deterministic decisions, safely invoke tools, and provide full execution traceability suitable for real-world systems.
+
+---
+
+## 1. Why agent_core exists
+
+Most Agent frameworks focus on *what* the LLM can do, but ignore *how* decisions are made and *why* failures happen.
+
+Common problems in real Agent systems:
+
+* Uncontrolled tool calling
+* Infinite reasoning loops
+* No clear termination conditions
+* Impossible to debug or replay decisions
+* Hard to evaluate whether the Agent actually "worked"
+
+**agent_core addresses these problems from an engineering perspective.**
+
+---
+
+## 2. Core design principles
+
+### 2.1 Explicit Agent lifecycle
+
+Each Agent run follows a strict lifecycle:
+
+1. **Decision** – select the best next action
+2. **Execution** – call a tool or produce output
+3. **Reflection / State Update** – update experience and history
+4. **Termination** – determine whether the task is completed
+
+No step is implicit or hidden inside an LLM call.
+
+---
+
+### 2.2 Deterministic decision layer
+
+Tool selection is not delegated blindly to an LLM.
+
+The decision score is a weighted combination of:
+
+* **Rule score** (task–tool compatibility)
+* **History score** (past success/failure experience)
+* **LLM suggestion score** (advisory, not authoritative)
+
+This prevents:
+
+* Tool hallucination
+* Repeated failed actions
+* Non-terminating loops
+
+---
+
+### 2.3 Explainability & replay
+
+Every Agent run produces a full execution history:
+
+* Decision candidates and scores
+* Selected action
+* Tool execution result
+* Confidence and success status
+
+This history can be replayed step by step for debugging or evaluation.
+
+---
+
+## 3. Architecture overview
+
+```
+User Task
+   ↓
+Decision Engine
+   ↓
+Tool Execution
+   ↓
+State Update & Learning Bias
+   ↓
+Termination Check
+```
+
+Key modules:
+
+* `decision.py` – tool selection logic
+* `execution.py` – tool invocation
+* `agent.py` – Agent loop orchestration
+* `replay.py` – execution trace rendering
+
+---
+
+## 4. Example demo
+
+```python
+import asyncio
+from agent import run_agent
+
+async def main():
+    task = "计算 1999 + 1996 并整理输出"
+    result = await run_agent(task)
+    print(result.result["answer"])
+
+asyncio.run(main())
+```
+
+**Output (simplified):**
+
+```
+最终答案是 3995。
+```
+
+---
+
+## 5. Agent replay example
+
+```
+[1] DECISION | step=step_1 | selected=calculator | score=0.85
+[2] EXECUTE  | step=step_1 | tool=calculator | success=True
+[3] DECISION | step=step_2 | selected=echo | score=0.71
+[4] EXECUTE  | step=step_2 | tool=echo | success=True
+```
+
+This replay shows *why* each tool was selected and *how* the Agent converged.
+
+---
+
+## 6. Supported tools
+
+* `calculator` – numeric computation
+* `echo` – structured output formatting
+
+New tools can be added by implementing a unified execution interface.
+
+---
+
+## 7. Termination & status semantics
+
+Each Agent run ends with a clear status:
+
+* `completed` – task successfully delivered
+* `awaiting_user` – missing information
+* `failed` – unrecoverable error
+
+This enables clean API integration and monitoring.
+
+---
+
+## 8. When to use agent_core
+
+agent_core is suitable for:
+
+* Agent system prototyping
+* Tool-based task automation
+* Research on Agent decision reliability
+* Interview or portfolio demonstrations
+
+It is **not** a prompt library or chatbot framework.
+
+---
+
+## 9. Roadmap (intentionally minimal)
+
+* [ ] REST API wrapper (FastAPI)
+* [ ] Tool sandboxing
+* [ ] Execution metrics export
+
+---
+
+## 10. License
+
+MIT (planned)
