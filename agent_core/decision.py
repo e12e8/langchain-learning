@@ -10,17 +10,15 @@ def decide(step, state: State) -> DecisionResult:
 
     candidates: List[ToolCandidate] = []
 
-    # === 规则层（rule-based） ===
-    if "计算" in step.desc:
-        tool_rules = {
-            "calculator": 1.0,
-            "echo": 0.6,
-        }
+    desc = step.desc
+
+    # === 规则层：加入知识库检索的判断 ===
+    if "计算" in desc:
+        tool_rules = {"calculator": 1.0, "echo": 0.2, "knowledge": 0.1}
+    elif any(kw in desc for kw in ["检索", "知识库", "查询", "谁是"]):
+        tool_rules = {"knowledge": 1.0, "echo": 0.4, "calculator": 0.1}
     else:
-        tool_rules = {
-            "echo": 0.8,
-            "calculator": 0.3,
-        }
+        tool_rules = {"echo": 0.8, "knowledge": 0.2, "calculator": 0.1}
 
     # === 打分融合 ===
     for tool, rule_score in tool_rules.items():
@@ -31,26 +29,12 @@ def decide(step, state: State) -> DecisionResult:
             else 0.5
         )
 
-        llm_score = rule_score  # 当前阶段先简化
-        bias = state.tool_experience_bias[tool]
+        llm_score = rule_score
+        bias = state.tool_experience_bias.get(tool, 0.0)
 
-        final = round(
-            0.5 * rule_score +
-            0.3 * history_score +
-            0.2 * llm_score +
-            bias,
-            2
-        )
+        final = round(0.5 * rule_score + 0.3 * history_score + 0.2 * llm_score + bias, 2)
 
-        candidates.append(
-            ToolCandidate(
-                tool_name=tool,
-                rule_score=rule_score,
-                history_score=history_score,
-                llm_score=llm_score,
-                final_score=final,
-            )
-        )
+        candidates.append(ToolCandidate(tool, rule_score, history_score, llm_score, final))
 
     # === 选择得分最高的工具 ===
     candidates.sort(key=lambda x: x.final_score, reverse=True)

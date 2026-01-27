@@ -49,6 +49,21 @@ class State:
 
         if reflection.get("should_retry"):
             self.step_retry_counts[step_id] += 1
+        # 持久化到磁盘，作为简单的内存恢复/过渡实现
+        try:
+            self.save_to_disk()
+        except Exception:
+            pass
+
+    def save_to_disk(self):
+        import json
+        data = {
+            "tool_experience_bias": dict(self.tool_experience_bias),
+            "tool_stats": dict(self.tool_stats),
+            "history": self.history,
+        }
+        with open("agent_memory.json", "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
 
     def get_last_decision(self, step_id: str):
         for item in reversed(self.history):

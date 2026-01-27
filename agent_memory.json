@@ -1,0 +1,118 @@
+{
+  "tool_experience_bias": {
+    "knowledge": 0.08,
+    "echo": 0.08
+  },
+  "tool_stats": {
+    "knowledge": {
+      "success": 1,
+      "failure": 0
+    },
+    "echo": {
+      "success": 1,
+      "failure": 0
+    },
+    "calculator": {
+      "success": 0,
+      "failure": 0
+    }
+  },
+  "history": [
+    {
+      "type": "decision",
+      "step_id": "step_1",
+      "decision": {
+        "selected_tool": "knowledge",
+        "final_score": 0.85,
+        "candidates": [
+          {
+            "tool": "knowledge",
+            "rule_score": 1.0,
+            "history_score": 0.5,
+            "llm_score": 1.0,
+            "final_score": 0.85
+          },
+          {
+            "tool": "echo",
+            "rule_score": 0.4,
+            "history_score": 0.5,
+            "llm_score": 0.4,
+            "final_score": 0.43
+          },
+          {
+            "tool": "calculator",
+            "rule_score": 0.1,
+            "history_score": 0.5,
+            "llm_score": 0.1,
+            "final_score": 0.22
+          }
+        ]
+      }
+    },
+    {
+      "type": "execution",
+      "step_id": "step_1",
+      "tool": "knowledge",
+      "result": {
+        "ok": true,
+        "result": "---\n\n## 四、8周详细学习计划\n\n### **第 1 周：大模型应用开发基础 + 手撕 Naive RAG**\n---\n| 35     | 周度总结与生产环境模拟           |                                                                                                                                                                            | 模拟一次线上故障，并使用本周学习的工具链进行问题定位               |\n---\n**🌟 每日学习计划**"
+      },
+      "reflection": {
+        "is_success": true,
+        "should_retry": false,
+        "confidence": 0.9,
+        "reason": "步骤执行成功",
+        "failure_severity": 0.0,
+        "counterfactual": null
+      }
+    },
+    {
+      "type": "decision",
+      "step_id": "step_2",
+      "decision": {
+        "selected_tool": "echo",
+        "final_score": 0.71,
+        "candidates": [
+          {
+            "tool": "echo",
+            "rule_score": 0.8,
+            "history_score": 0.5,
+            "llm_score": 0.8,
+            "final_score": 0.71
+          },
+          {
+            "tool": "knowledge",
+            "rule_score": 0.2,
+            "history_score": 1.0,
+            "llm_score": 0.2,
+            "final_score": 0.52
+          },
+          {
+            "tool": "calculator",
+            "rule_score": 0.1,
+            "history_score": 0.5,
+            "llm_score": 0.1,
+            "final_score": 0.22
+          }
+        ]
+      }
+    },
+    {
+      "type": "execution",
+      "step_id": "step_2",
+      "tool": "echo",
+      "result": {
+        "ok": true,
+        "content": "Echo: 根据搜索到的计划内容进行总结回答 (基于前一步结果: ---\n\n## 四、8周详细学习计划\n\n### **第 1 周：大模型应用开发基础 + 手撕 Naive RAG**\n---\n| 35     | 周度总结与生产环境模拟           |                                                                                                                                                                            | 模拟一次线上故障，并使用本周学习的工具链进行问题定位               |\n---\n**🌟 每日学习计划**)"
+      },
+      "reflection": {
+        "is_success": true,
+        "should_retry": false,
+        "confidence": 0.9,
+        "reason": "步骤执行成功",
+        "failure_severity": 0.0,
+        "counterfactual": null
+      }
+    }
+  ]
+}

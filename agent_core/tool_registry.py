@@ -1,6 +1,7 @@
 # tool_registry.py - 工具注册表
 from typing import Dict, Any, Protocol, List
 import re  # 加 re 用于提取表达式
+from tools.knowledge import query_knowledge
 
 
 class Tool(Protocol):
@@ -41,11 +42,17 @@ class CalculatorTool:
             # 返回错误信息
             return {"ok": False, "error": str(e)}
 
-
+# 增加一个知识检索类
+class KnowledgeTool:
+    def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        desc = context.get("step_desc", "")
+        # 调用我们在 tools/knowledge.py 中定义的查询函数
+        return query_knowledge(desc)
 # 注册工具字典
 _TOOLS: Dict[str, Tool] = {
     "echo": EchoTool(),
     "calculator": CalculatorTool(),
+    "knowledge": KnowledgeTool(),
 }
 
 
